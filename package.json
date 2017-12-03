@@ -15,6 +15,7 @@
     "mongodb": "latest",
     "morgan": "~1.9.0",
     "serve-favicon": "~2.4.5",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "google": "latest"
   }
 }
