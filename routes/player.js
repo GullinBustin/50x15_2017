@@ -8,22 +8,17 @@ var google = require('google');
 router.post('/start', function(req, res, next) {
     var players = {};
     var names = req.body.pNames;
-    for (var i = 0; i < parseInt(req.body.pNum); i++) {
+    for (var i in names) {
         players[names[i]] = player.Player(names[i]);
     }
 
     req.session.players = players;
     req.session.level = 0;
-    res.status(200).send('OK');
+
+    console.log(req.session);
+    res.status(200).json({status: 200, reason: 'OK'});
 });
 
-router.get('/user', function(req, res, next) {
-    if(req.session.players){
-        res.send(req.session.players);
-    }else{
-        res.status(404).send('404 Player Not Found');
-    }
-});
 
 router.post('/answer', function (req, res, next) {
     var pName = req.body.pName;
@@ -167,33 +162,107 @@ var getGoogle = function (text, nRes, callBack) {
     })
 };
 
+router.post('/nextLVL', function (req, res, next) {
+    var collection = db.collection('Preguntas');
+    req.session.level += 1;
+    var level = 'Nivel ' + req.session.level;
+    if (req.session.level != undefined) {
+        collection.aggregate([
+            {$match: {level: level}}, // filter the results
+            {
+                $project: {
+                    '_id': 1
+                }
+            },
+            {$sample: {size: 2}}
+        ], function (err, data) {
+            for (var pg in req.session.players) {
+                player.setQuestion(req.session.players[pg], data[0]._id);
+            }
+
+            req.session.question = data[0]._id;
+            req.session.questionChange = data[1]._id;
+            // TODO enviar respuestas en forma de array de JSONs con texto y letra
+            to_send = {
+                enunciado: data[0].enunciado,
+                respuestas: [
+                    {
+                        text: data[0].resp1,
+                        key: 'a'
+                    },
+                    {
+                        text: data[0].resp2,
+                        key: 'b'
+                    },
+                    {
+                        text: data[0].resp3,
+                        key: 'c'
+                    },
+                    {
+                        text: data[0].resp4,
+                        key: 'd'
+                    }
+                ]
+            };
+            res.send(to_send);
+        });
+    }else{
+        res.status(404).json({status: 404, reason: 'User Not Found'});
+    }
+});
+
 router.get('/pregunta', function(req, res, next){
     var collection = db.collection('Preguntas');
     var level = 'Nivel '+(req.session.level + 1);
-
-    collection.aggregate([
-        {$match: {level: level}}, // filter the results
-        {
-            $project: {
-                '_id': 1,
-                'enunciado': 1,
-                'resp1': 1,
-                'resp2': 1,
-                'resp3': 1,
-                'resp4': 1
+    console.log(req.session);
+    if (req.session.level != undefined) {
+        collection.aggregate([
+            {$match: {level: level}}, // filter the results
+            {
+                $project: {
+                    '_id': 1,
+                    'enunciado': 1,
+                    'resp1': 1,
+                    'resp2': 1,
+                    'resp3': 1,
+                    'resp4': 1
+                }
+            },
+            {$sample: {size: 2}}
+        ], function (err, data) {
+            for (var pg in req.session.players) {
+                player.setQuestion(req.session.players[pg], data[0]._id);
             }
-        },
-        {$sample: {size: 2}}
-    ], function (err, data) {
-        for (var pg in req.session.players) {
-            player.setQuestion(req.session.players[pg],data[0]._id);
-        }
 
-        req.session.question = data[0]._id;
-        req.session.questionChange = data[1]._id;
-        // TODO enviar respuestas en forma de array de JSONs con texto y letra
-        res.send(data[0]);
-    });
+            req.session.question = data[0]._id;
+            req.session.questionChange = data[1]._id;
+            // TODO enviar respuestas en forma de array de JSONs con texto y letra
+            to_send = {
+                enunciado: data[0].enunciado,
+                respuestas: [
+                    {
+                        text: data[0].resp1,
+                        key: 'a'
+                    },
+                    {
+                        text: data[0].resp2,
+                        key: 'b'
+                    },
+                    {
+                        text: data[0].resp3,
+                        key: 'c'
+                    },
+                    {
+                        text: data[0].resp4,
+                        key: 'd'
+                    }
+                ]
+            };
+            res.send(to_send);
+        });
+    }else{
+        res.status(404).json({status: 404, reason: 'User Not Found'});
+    }
 });
 
 function shuffle(array) {

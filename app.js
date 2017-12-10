@@ -11,6 +11,7 @@ var uuidv1 = require('uuid/v1');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var player = require('./routes/player');
+var api_50x15 = require('./routes/api_50x15');
 
 var mongo_config = require('./services/mongoConfig')
 
@@ -26,12 +27,34 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(session({secret: uuidv1(), resave: true, saveUninitialized: true}));
+app.use(session({secret: "mySecret", resave: true, saveUninitialized: true, cookie: { httpOnly: false }}));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('withCredentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
 
 app.use('/', index);
 app.use('/users', users);
 app.use('/player', player);
+app.use('/api', api_50x15);
+
 
 mongo_config();
 

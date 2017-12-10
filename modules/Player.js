@@ -24,6 +24,7 @@ var Player = function (name) {
         alive: true,
         name: name,
         question: null,
+        question2: null,
         comodines: {
             '50pc': true,
             'change': true,
