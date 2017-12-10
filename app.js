@@ -11,6 +11,7 @@ var uuidv1 = require('uuid/v1');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var player = require('./routes/player');
+var game = require('./routes/game');
 var api_50x15 = require('./routes/api_50x15');
 
 var mongo_config = require('./services/mongoConfig')
@@ -53,6 +54,7 @@ app.use(function (req, res, next) {
 app.use('/', index);
 app.use('/users', users);
 app.use('/player', player);
+app.use('/game', game);
 app.use('/api', api_50x15);
 
 
