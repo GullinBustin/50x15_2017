@@ -190,7 +190,7 @@ router.post('/nextLVL', function (req, res, next) {
                 },
                 {$sample: {size: 2}}
             ], function (err, data) {
-                cincuenta.setQuestion(game, data[0]._id, data[0].correct, data[1]._id, data[1].correct);
+                cincuenta.increaseLevel(game, data[0]._id, data[0].correct, data[1]._id, data[1].correct);
                 res.status(200).send("OK");
             });
         }else{
@@ -223,6 +223,12 @@ router.get('/pregunta/:player', function(req, res, next){
         res.status(404).json({status: 404, reason: 'User Not Found'});
     }
 });
+
+router.get('/game', function(req, res, next){
+    var game = req.session.game;
+    res.status(200).json(game);
+});
+
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;

@@ -56,13 +56,18 @@ var Player = function (name) {
 };
 
 // class methods
-var setQuestion = function(game, id1, ans1, id2, ans2) {
+var increaseLevel = function(game, id1, ans1, id2, ans2) {
     if (!game.end) {
-        game.current_question = id1;
-        game.current_question_change = id2;
-        game.question_50pc = [ans1, randomAnswer(ans1)];
-        game.question_change_50pc = [ans2, randomAnswer(ans2)];
+        setQuestion(game, id1, ans1, id2, ans2);
+        game.level = game.level + 1;
     }
+};
+
+var setQuestion = function(game, id1, ans1, id2, ans2) {
+    game.current_question = id1;
+    game.current_question_change = id2;
+    game.question_50pc = [ans1, randomAnswer(ans1)];
+    game.question_change_50pc = [ans2, randomAnswer(ans2)];
 };
 
 var nextLevelReady = function (game) {
@@ -114,7 +119,7 @@ var getPlayerQuestion = function (game, name) {
 };
 
 var correctAnswer = function(game, name, succes) {
-    if (game.players[name].alive && game.level == game.players[name].level){
+    if (game.players[name].alive && game.level > game.players[name].level){
         if (succes){
             game.players[name].level = game.players[name].level + 1;
             return true
@@ -163,7 +168,7 @@ var useGoogle = function(game, name){
 
 // export the class
 exports.Game = Game;
-exports.setQuestion = setQuestion;
+exports.increaseLevel = increaseLevel;
 exports.correctAnswer = correctAnswer;
 exports.isAlive = isAlive;
 exports.getPoints = getPoints;
