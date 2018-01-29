@@ -71,12 +71,20 @@ var setQuestion = function(game, id1, ans1, id2, ans2) {
 };
 
 var nextLevelReady = function (game) {
-    for(name in game.players){
+    var someAlive = false;
+    for (name in game.players) {
         if (!(!game.players[name].alive || game.players[name].level >= game.level)) {
-            return false;
+            return "notReady";
+        }
+        if (game.players[name].alive) {
+            someAlive = true;
         }
     }
-    return true;
+    if (someAlive) {
+        return "ready";
+    }else{
+        return "gameEnds";
+    }
 };
 
 var randomAnswer = function (correct) {
@@ -116,6 +124,10 @@ var getPlayerQuestion = function (game, name) {
     }
 
     return to_return;
+};
+
+var getPlayerComodines = function (game, name) {
+    return game["players"][name]["comodines"];
 };
 
 var correctAnswer = function(game, name, succes) {
@@ -179,3 +191,4 @@ exports.getPlayerQuestion = getPlayerQuestion;
 exports.getLevel = getLevel;
 exports.getNextLevel = getNextLevel;
 exports.nextLevelReady = nextLevelReady;
+exports.getPlayerComodines= getPlayerComodines;

@@ -12,7 +12,7 @@ router.post('/start', function(req, res, next) {
     req.session.game = game;
 
     console.log(req.session);
-    res.status(200).json({status: 200, reason: 'OK'});
+    res.status(201).json({reason: 'Created Game'});
 });
 
 router.post('/answer', function (req, res, next) {
@@ -27,10 +27,10 @@ router.post('/answer', function (req, res, next) {
         collection.find({'_id': idQuestion, 'correct': answer}).toArray(function (err, data) {
 
             var to_send = cincuenta.correctAnswer(game, pName, data.length > 0);
-            res.status(200).send(to_send);
+            res.status(200).send({reason: "Answer Done", successful: to_send});
         });
     }else{
-        res.status(404).send("Not Found");
+        res.status(404).send({reason: "Not Found"});
     }
 
 });
@@ -43,33 +43,43 @@ router.post('/comodin', function (req, res, next) {
         switch (answer) {
             case '50pc':
                 if (cincuenta.use50pc(game, pName)) {
-                    res.status(200).send("OK");
+                    res.status(200).send({reason: 'OK'});
                 } else {
-                    res.status(200).send("NO");
+                    res.status(204).send({reason: 'No Content'});
                 }
                 break;
             case 'change':
                 if (cincuenta.useChange(game, pName)) {
-                    res.status(200).send("OK");
+                    res.status(200).send({reason: 'OK'});
                 } else {
-                    res.status(200).send("NO");
+                    res.status(204).send({reason: 'No Content'});
                 }
                 break;
             case 'google':
                 if (cincuenta.useGoogle(game, pName)) {
                     getGoogle(req.body.text, 5, function (data) {
-                        res.status(200).send(data);
+                        res.status(200).send({reason: 'OK', google_search: data});
                     });
 
                 } else {
-                    res.status(200).send("NO");
+                    res.status(204).send({reason: 'No Content'});
                 }
                 break;
             default:
-                res.status(404).send("Not Found");
+                res.status(404).send({reason: "Not Found"});
         }
     }
 
+});
+
+router.get('/comodines/:player', function (req, res, next) {
+    if (req.session.game != undefined) {
+        var game = req.session.game;
+
+        var comodines = cincuenta.getPlayerComodines(game, req.params.player);
+
+        res.status(200).send({reason: 'OK', comodines: comodines});
+    }
 });
 
 var get50pc = function(qid, answers, callBack){
@@ -178,7 +188,9 @@ router.post('/nextLVL', function (req, res, next) {
     if (req.session.game != undefined) {
         var game = req.session.game;
         var level = "Nivel " + cincuenta.getNextLevel(game);
-        if(cincuenta.nextLevelReady(game)) {
+        var isReady = cincuenta.nextLevelReady(game);
+        console.log(game);
+        if(isReady == "ready") {
             var collection = db.collection('Preguntas');
             collection.aggregate([
                 {$match: {level: level}}, // filter the results
@@ -190,14 +202,22 @@ router.post('/nextLVL', function (req, res, next) {
                 },
                 {$sample: {size: 2}}
             ], function (err, data) {
-                cincuenta.increaseLevel(game, data[0]._id, data[0].correct, data[1]._id, data[1].correct);
-                res.status(200).send("OK");
+                cincuenta.increaseLevel(game,
+                    data[0]._id,
+                    data[0].correct,
+                    data[1]._id,
+                    data[1].correct);
+                res.status(200).send({reason: 'OK', game_ends: false});
             });
         }else{
-            res.status(200).send("NO");
+            if(isReady == "notReady") {
+                res.status(204).send({reason: 'Not Ready'});
+            }else{
+                res.status(200).send({reason: 'OK', game_ends: true});
+            }
         }
     }else{
-        res.status(404).json({status: 404, reason: 'User Not Found'});
+        res.status(404).json({reason: 'User Not Found'});
     }
 });
 
@@ -211,16 +231,15 @@ router.get('/pregunta/:player', function(req, res, next){
 
         if(question['50pc']){
             get50pc(question.qId, question['50pc'], function(data){
-                res.status(200).json(data)
+                res.status(200).json({reason: 'OK', question: data})
             });
         }else{
             getQuestion(question.qId, function(data){
-                res.status(200).json(data);
+                res.status(200).json({reason: 'OK', question: data});
             });
         }
-
     }else{
-        res.status(404).json({status: 404, reason: 'User Not Found'});
+        res.status(404).json({reason: 'User Not Found'});
     }
 });
 
