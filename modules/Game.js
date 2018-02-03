@@ -148,6 +148,10 @@ var correctAnswer = function(game, name, success) {
     return false
 };
 
+var plantarPlayer = function (game, name) {
+    game.players[name].alive = false;
+};
+
 var isAlive = function(game, name){
     return game.players[name].alive;
 };
@@ -221,3 +225,4 @@ exports.nextLevelReady = nextLevelReady;
 exports.getPlayerComodines= getPlayerComodines;
 exports.playersLife = playersLife;
 exports.playersPoints = playersPoints;
+exports.plantarPlayer = plantarPlayer;

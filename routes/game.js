@@ -72,6 +72,13 @@ router.post('/comodin', function (req, res, next) {
 
 });
 
+router.post('/plantarse', function (req, res, next) {
+    var pName = req.body.pName;
+    var game = req.session.game;
+    cincuenta.plantarPlayer(game, pName);
+    res.status(200).send({reason: "OK"});
+});
+
 router.get('/comodines/:player', function (req, res, next) {
     if (req.session.game != undefined) {
         var game = req.session.game;
