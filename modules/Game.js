@@ -1,5 +1,6 @@
 
 const reward = [
+    0,
     25000,
     50000,
     75000,
@@ -60,6 +61,10 @@ var increaseLevel = function(game, id1, ans1, id2, ans2) {
     if (!game.end) {
         setQuestion(game, id1, ans1, id2, ans2);
         game.level = game.level + 1;
+        for (name in game.players) {
+            game.players[name].turn_change = false;
+            game.players[name].turn_50pc = false;
+        }
     }
 };
 
@@ -130,13 +135,14 @@ var getPlayerComodines = function (game, name) {
     return game["players"][name]["comodines"];
 };
 
-var correctAnswer = function(game, name, succes) {
+var correctAnswer = function(game, name, success) {
     if (game.players[name].alive && game.level > game.players[name].level){
-        if (succes){
+        if (success){
             game.players[name].level = game.players[name].level + 1;
             return true
         }else{
             game.players[name].alive = false;
+            game.players[name].level = game.players[name].level - game.players[name].level%5;
         }
     }
     return false
@@ -165,6 +171,7 @@ var useChange = function(game, name){
     if (game.players[name].comodines.change){
         game.players[name].comodines.change = false;
         game.players[name].turn_change = true;
+        game.players[name].turn_50pc = false;
         return true;
     }
     return false;
@@ -176,6 +183,26 @@ var useGoogle = function(game, name){
         return true;
     }
     return false;
+};
+
+var playersLife = function (game) {
+    var players_life = {};
+    for (var player in game['players']) {
+        players_life[player] = {
+            'alive': game['players'][player]['alive']
+        };
+    }
+    return players_life;
+};
+
+var playersPoints = function (game) {
+    var players_points = {};
+    for (var player in game['players']) {
+        players_points[player] = {
+            'points': reward[game['players'][player]['level']]
+        };
+    }
+    return players_points;
 };
 
 // export the class
@@ -192,3 +219,5 @@ exports.getLevel = getLevel;
 exports.getNextLevel = getNextLevel;
 exports.nextLevelReady = nextLevelReady;
 exports.getPlayerComodines= getPlayerComodines;
+exports.playersLife = playersLife;
+exports.playersPoints = playersPoints;

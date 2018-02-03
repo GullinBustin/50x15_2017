@@ -98,12 +98,12 @@ var get50pc = function(qid, answers, callBack){
         var res = [];
         res[0] = {
             'text':  value[ans_to_id[answers[0]]],
-            'id': answers[0]
+            'key': answers[0]
         };
 
         res[1] = {
             'text':  value[ans_to_id[answers[1]]],
-            'id': answers[1]
+            'key': answers[1]
         };
 
         res = shuffle(res);
@@ -115,7 +115,6 @@ var get50pc = function(qid, answers, callBack){
         callBack(to_send);
     })
 };
-
 
 var getQuestion = function(qid, callBack){
     var collection = db.collection('Preguntas');
@@ -166,7 +165,7 @@ var getGoogle = function (text, nRes, callBack) {
             var link = res.links[it];
             if(link.description) {
                 data[num] = {
-                    'tittle': link.title,
+                    'title': link.title,
                     'description': link.description
                 };
                 num++;
@@ -244,10 +243,33 @@ router.get('/pregunta/:player', function(req, res, next){
 });
 
 router.get('/game', function(req, res, next){
-    var game = req.session.game;
-    res.status(200).json(game);
+    if (req.session.game != undefined) {
+        var game = req.session.game;
+        res.status(200).json({reason: 'OK', game: game});
+    }else {
+        res.status(404).send({reason: "Not Found"})
+    }
 });
 
+router.get('/players_life', function (req, res, next) {
+    if (req.session.game != undefined) {
+        var game = req.session.game;
+        var players_status = cincuenta.playersLife(game);
+        res.status(200).send({reason: "OK", players_life: players_status})
+    }else {
+        res.status(404).send({reason: "Not Found"})
+    }
+});
+
+router.get('/players_points', function (req, res, next) {
+    if (req.session.game != undefined) {
+        var game = req.session.game;
+        var players_status = cincuenta.playersPoints(game);
+        res.status(200).send({reason: "OK", players_points: players_status})
+    }else {
+        res.status(404).send({reason: "Not Found"})
+    }
+});
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;

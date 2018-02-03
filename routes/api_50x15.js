@@ -108,7 +108,7 @@ var getGoogle = function (text, nRes, callBack) {
             var link = res.links[it];
             if(link.description) {
                 data[num] = {
-                    'tittle': link.title,
+                    'title': link.title,
                     'description': link.description
                 };
                 num++;
