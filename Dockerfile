@@ -1,4 +1,4 @@
-FROM node:9.5
+FROM arm32v7/node:9.5
 
 
 WORKDIR /usr/src/50x15

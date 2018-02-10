@@ -205,14 +205,18 @@ router.post('/nextLVL', function (req, res, next) {
                         '_id': 1,
                         'correct': 1
                     }
-                },
-                {$sample: {size: 2}}
+                }
             ], function (err, data) {
+                var first = getRandomInt(0, data.length - 1)
+                var second = getRandomInt(0, data.length - 2)
+                if (first <= second){
+                  second += 1;
+                }
                 cincuenta.increaseLevel(game,
-                    data[0]._id,
-                    data[0].correct,
-                    data[1]._id,
-                    data[1].correct);
+                    data[first]._id,
+                    data[first].correct,
+                    data[second]._id,
+                    data[second].correct);
                 res.status(200).send({reason: 'OK', game_ends: false});
             });
         }else{
@@ -297,5 +301,8 @@ function shuffle(array) {
     return array;
 }
 
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 module.exports = router;
